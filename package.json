@@ -1,0 +1,66 @@
+{
+  "name": "@x-python/core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/suren-atoyan/x-python",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/suren-atoyan/x-python.git"
+  },
+  "bugs": {
+    "url": "https://github.com/suren-atoyan/x-python/issues"
+  },
+  "keywords": [
+    "python",
+    "python in browser",
+    "javascript",
+    "typescript"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:watch": "tsc && vite build --watch",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "eslint": "^8.30.0",
+    "husky": "^8.0.2",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.8.1",
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0",
+    "vite-plugin-dts": "^1.7.1",
+    "vite-plugin-virtual-html": "^0.4.7"
+  },
+  "types": "./dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/main.ts.js",
+      "require": "./dist/main.ts.umd.js"
+    }
+  },
+  "dependencies": {
+    "immer": "^9.0.16",
+    "pyodide": "^0.21.3",
+    "state-local": "^1.0.7"
+  },
+  "lint-staged": {
+    "src/**/*.{js,ts,json,md}": [
+      "prettier --write"
+    ],
+    "src/**/*.{js,ts,json}": [
+      "eslint --max-warnings=0"
+    ]
+  },
+  "author": {
+    "name": "Suren Atoyan",
+    "email": "contact@surenatoyan.com",
+    "url": "http://surenatoyan.com/"
+  }
+}

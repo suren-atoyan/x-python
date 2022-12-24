@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 646 187">
+	<style>
+		.main-stop {
+		stop-color: black;
+		animation: 5s gradient-update 3s linear;
+		}
+		
+		.alt-stop {
+		stop-color: black;
+		}
+		
+		#x-line {
+		animation: acceleration-try 3s linear, 5s acceleration 3s cubic-bezier(0.75, 0.25, 0.25, 0.75);
+		transform-origin: 88px 89px;
+		shape-rendering: crispEdges;
+		fill: url(#x-bg-color);
+		}
+		
+		#separator-line {
+		animation: 6.5s fade-in-out 2s linear;
+		opacity: 1;
+		}
+		
+		@keyframes gradient-update {
+		0% {
+		stop-color: black;
+		}
+		
+		50% {
+		stop-color: #cf1920;
+		}
+		
+		100% {
+		stop-color: black;
+		}
+		}
+		
+		@keyframes acceleration-try {
+		0% {
+		transform: rotate(0);
+		}
+		
+		25% {
+		transform: rotate(31deg);
+		}
+		
+		50% {
+		transform: rotate(-31deg);
+		}
+		
+		75% {
+		transform: rotate(31deg);
+		}
+		
+		100% {
+		transform: rotate(0);
+		}
+		}
+		
+		@keyframes acceleration {
+		0% {
+		transform: rotate(0);
+		}
+		
+		50% {
+		transform: rotate(2700deg);
+		}
+		
+		100% {
+		transform: rotate(0);
+		}
+		}
+		
+		@keyframes fade-in-out {
+		
+		0%,
+		100% {
+		opacity: 1
+		}
+		
+		20% {
+		opacity: 0
+		}
+		
+		90% {
+		opacity: 0
+		}
+		}
+	</style>
+	<linearGradient id="x-bg-color">
+		<stop class="main-stop" offset="0%" />
+		<stop class="alt-stop" offset="30%" />
+		<stop class="alt-stop" offset="50%" />
+		<stop class="alt-stop" offset="70%" />
+		<stop class="main-stop" offset="100%" />
+	</linearGradient>
+	<path d="M593.55,10c23.41,0,42.45,19.04,42.45,42.45v82.1c0,23.41-19.04,42.45-42.45,42.45H52.45c-23.41,0-42.45-19.04-42.45-42.45V52.45C10,29.04,29.04,10,52.45,10H593.55m0-10H52.45C23.48,0,0,23.48,0,52.45v82.1c0,28.97,23.48,52.45,52.45,52.45H593.55c28.97,0,52.45-23.48,52.45-52.45V52.45c0-28.97-23.48-52.45-52.45-52.45h0Z" />
+	<path id="x-line" d="M101.04,88.9l15.89-15.89c3.71-3.71,3.71-9.72,0-13.43-3.71-3.71-9.72-3.71-13.43,0l-15.89,15.89-15.89-15.89c-3.71-3.71-9.72-3.71-13.43,0-3.71,3.71-3.71,9.72,0,13.43l15.89,15.89-15.89,15.89c-3.71,3.71-3.71,9.73,0,13.44,1.85,1.85,4.29,2.78,6.72,2.78s4.86-.93,6.72-2.78l15.89-15.89,15.89,15.89c1.85,1.85,4.29,2.78,6.72,2.78s4.86-.93,6.72-2.78c3.71-3.71,3.71-9.73,0-13.44l-15.89-15.89Z" />
+	<line id="separator-line" x1="135.5" y1="89.5" x2="171.5" y2="89.5" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:19px;" />
+	<line x1="207" y1="45.5" x2="207" y2="124.5" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:19px;" />
+	<line x1="406.5" y1="45.5" x2="406.5" y2="124.5" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:19px;" />
+	<line x1="545.5" y1="79.5" x2="545.5" y2="124.5" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:19px;" />
+	<line x1="321" y1="71.5" x2="287" y2="154.5" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:17px;" />
+	<line x1="276" y1="72" x2="298.5" y2="126.5" style="fill:none; stroke:#204051; stroke-linecap:round; stroke-miterlimit:10; stroke-width:17px;" />
+	<path d="M358.5,44.5V110.94c0,19.06,17.57,16.04,22,15.06" style="fill:none; stroke:#000; stroke-linecap:round; stroke-miterlimit:10; stroke-width:17px;" />
+	<line x1="343.5" y1="68.5" x2="373.5" y2="68.5" style="fill:#173815; stroke:#204051; stroke-linecap:round; stroke-miterlimit:10; stroke-width:17px;" />
+	<path d="M498,135c-18.2,0-33-14.8-33-33s14.8-33,33-33,33,14.8,33,33-14.8,33-33,33Zm0-49c-8.82,0-16,7.18-16,16s7.18,16,16,16,16-7.18,16-16-7.18-16-16-16Z" />
+	<path d="M498.5,118h-.5c-8.82,0-16-7.18-16-16s7.18-16,16-16v-17c-18.2,0-33,14.8-33,33s14.8,33,33,33h.5c4.69,0,8.5-3.81,8.5-8.5s-3.81-8.5-8.5-8.5Z" style="fill:#204051;" />
+	<path d="M498,69h-.38c-4.69,0-8.5,3.81-8.5,8.5s3.81,8.5,8.5,8.5h.38v-17Z" />
+	<path d="M579.25,103.47v23.75c0,4.69,3.81,8.5,8.5,8.5s8.5-3.81,8.5-8.5v-23.75h-17Z" style="fill:#204051;" />
+	<path d="M596.25,103.47h-17c0-9.1-6.95-16.5-15.5-16.5v-17c17.92,0,32.5,15.03,32.5,33.5Z" style="fill:#204051;" />
+	<path d="M544.7,70c-4.69,0-8.5,3.81-8.5,8.5s3.81,8.5,8.5,8.5h19.3v-17h-19.3Z" style="fill:#204051;" />
+	<path d="M258.02,69.47h-17c0-9.1-6.95-16.5-15.5-16.5v-17c17.92,0,32.5,15.03,32.5,33.5Z" style="fill:#204051;" />
+	<path d="M206.48,36c-4.69,0-8.5,3.81-8.5,8.5s3.81,8.5,8.5,8.5h19.3v-17h-19.3Z" style="fill:#204051;" />
+	<path d="M258.02,68.98h-17c0,9.1-6.95,16.5-15.5,16.5v17c17.92,0,32.5-15.03,32.5-33.5Z" style="fill:#204051;" />
+	<path d="M206.48,102.45c-4.69,0-8.5-3.81-8.5-8.5s3.81-8.5,8.5-8.5h19.3v17h-19.3Z" style="fill:#204051;" />
+	<path d="M440.25,103.47v23.75c0,4.69,3.81,8.5,8.5,8.5s8.5-3.81,8.5-8.5v-23.75h-17Z" style="fill:#204051;" />
+	<path d="M457.25,103.47h-17c0-9.1-6.95-16.5-15.5-16.5v-17c17.92,0,32.5,15.03,32.5,33.5Z" style="fill:#204051;" />
+	<path d="M405.7,70c-4.69,0-8.5,3.81-8.5,8.5s3.81,8.5,8.5,8.5h19.3v-17h-19.3Z" style="fill:#204051;" />
+</svg>
