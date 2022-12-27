@@ -3,19 +3,11 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
-import virtualHtml from 'vite-plugin-virtual-html';
-
 export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
       rollupTypes: true,
-    }),
-    virtualHtml({
-      pages: {
-        index: '/playground/index.html',
-      },
-      indexPage: 'index',
     }),
   ],
   build: {
@@ -26,11 +18,21 @@ export default defineConfig({
       fileName: 'main.ts',
     },
     rollupOptions: {
+      input: {
+        app: './playground/index.html',
+      },
       external: ['state-local', 'immer', 'pyodide'],
       output: {
-        exports: 'auto',
+        globals: {
+          'state-local': 'state',
+          immer: 'produce',
+          pyodide: 'pyodide',
+        },
       },
     },
+  },
+  server: {
+    open: './playground/index.html',
   },
   worker: {
     format: 'es',
