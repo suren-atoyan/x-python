@@ -18,9 +18,6 @@ export default defineConfig({
       fileName: 'main.ts',
     },
     rollupOptions: {
-      input: {
-        app: './playground/index.html',
-      },
       external: ['state-local', 'immer', 'pyodide'],
       output: {
         globals: {
