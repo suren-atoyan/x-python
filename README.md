@@ -1,5 +1,9 @@
 # @x-python/core &middot; [![monthly downloads](https://img.shields.io/npm/dm/@x-python/core)](https://www.npmjs.com/package/@monaco-editor/loader) [![gitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/suren-atoyan/monaco-loader/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@x-python/core.svg?style=flat)](https://www.npmjs.com/package/@x-python/core) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/suren-atoyan/x-python/pulls)
 
+<a href="https://github.com/suren-atoyan/x-python/" target="_blank" rel="noreferrer">
+  <img align="center" width="30%" height="auto" src="./playground/logo.svg" style="margin-bottom: 10px">
+</a>
+
 A complete solution for python-in-browser. (check the [Usage](#usage) section :point_down:)
 
 <hr />
