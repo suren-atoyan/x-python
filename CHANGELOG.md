@@ -1,3 +1,12 @@
+## 0.0.5
+
+###### _Dec 28, 2022_
+
+- remove `immer` from dependencies
+- add separate types for all callbacks
+- add `removeCallback` and `addCallback` utility functions
+- replace `immer` with `removeCallback` and `addCallback` utility functions
+
 ## 0.0.4
 
 ###### _Dec 28, 2022_
