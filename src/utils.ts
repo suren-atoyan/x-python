@@ -1,6 +1,6 @@
 import type { PyProxy, PyodideInterface } from 'pyodide';
 
-import type { CommandUniqueId } from './types';
+import type { CommandUniqueId, Callbacks } from './types';
 
 const WRAPPER_FUNCTION_NAME = 'wrapper';
 
@@ -98,4 +98,21 @@ function ensureCallbackIdExists(id: CommandUniqueId, doesIdExist: boolean) {
   }
 }
 
-export { extractMainErrorMessage, converteToJs, once, ensureCallbackIdExists };
+function removeCallback(callbacks: Callbacks, removingId: CommandUniqueId) {
+  const { [removingId]: removingCallback, ...rest } = callbacks;
+
+  return rest;
+}
+
+function addCallback<T>(callbacks: Callbacks, id: CommandUniqueId, callback: T) {
+  return { ...callbacks, [id]: callback };
+}
+
+export {
+  extractMainErrorMessage,
+  converteToJs,
+  once,
+  ensureCallbackIdExists,
+  removeCallback,
+  addCallback,
+};
