@@ -1,3 +1,9 @@
+## 0.0.3
+
+###### _Dec 28, 2022_
+
+- add cjs version of the bundle
+
 ## 0.0.2
 
 ###### _Dec 28, 2022_
