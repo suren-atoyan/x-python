@@ -3,9 +3,11 @@
 A complete solution for python-in-browser. (check the [Usage](#usage) section :point_down:)
 
 <hr />
+
 🔥 A REPL powered by `xPython` as `React` component is coming soon
 <br />
-⌛️It's still in beta testing
+⌛️ It's still in beta testing
+
 <hr />
 
 ## Synopsis
