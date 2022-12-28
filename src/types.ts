@@ -22,36 +22,34 @@ type Payload = ExecPayload | CompletePayload | InstallPayload | FormatPayload;
 // ====== ** ======
 
 // callbacks
-type ExecCallbacks = Record<
-  CommandUniqueId,
-  {
-    resolve: (value: ExecReturnValue) => void;
-  }
->;
+type ExecCallback = {
+  resolve: (value: ExecReturnValue) => void;
+};
 
-type CompleteCallbacks = Record<
-  CommandUniqueId,
-  {
-    resolve: (value: CompletionResults) => void;
-    reject: (value: string) => void;
-  }
->;
+type ExecCallbacks = Record<CommandUniqueId, ExecCallback>;
 
-type InstallCallbacks = Record<
-  CommandUniqueId,
-  {
-    resolve: (value: InstallReturnValue) => void;
-    reject: (value: string) => void;
-  }
->;
+type CompleteCallback = {
+  resolve: (value: CompletionResults) => void;
+  reject: (value: string) => void;
+};
 
-type FormatCallbacks = Record<
-  CommandUniqueId,
-  {
-    resolve: (value: FormatReturnValue) => void;
-    reject: (value: string) => void;
-  }
->;
+type CompleteCallbacks = Record<CommandUniqueId, CompleteCallback>;
+
+type InstallCallback = {
+  resolve: (value: InstallReturnValue) => void;
+  reject: (value: string) => void;
+};
+
+type InstallCallbacks = Record<CommandUniqueId, InstallCallback>;
+
+type FormatCallback = {
+  resolve: (value: FormatReturnValue) => void;
+  reject: (value: string) => void;
+};
+
+type FormatCallbacks = Record<CommandUniqueId, FormatCallback>;
+
+type Callbacks = FormatCallbacks | InstallCallbacks | CompleteCallbacks | ExecCallbacks;
 // ====== ** ======
 
 // params
@@ -141,9 +139,14 @@ export type {
   FormatPayload,
   // ====== ** ======
   // callbacks
+  Callbacks,
+  ExecCallback,
   ExecCallbacks,
+  CompleteCallback,
   CompleteCallbacks,
+  InstallCallback,
   InstallCallbacks,
+  FormatCallback,
   FormatCallbacks,
   // ====== ** ======
   // params
