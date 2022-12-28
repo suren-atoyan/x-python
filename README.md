@@ -28,7 +28,7 @@ Past few years we used python in production browser-based applications in quite 
   - [.init](#init)
   - [.exec](#exec)
   - [.complete](#complete)
-    - [.repl](#repl)
+    - [.repl](#complete)
   - [.format](#format)
   - [.install](#install)
 - [Development](#development)
@@ -143,7 +143,7 @@ console.log(stderr);
 
 ## API
 
-#### .init()
+#### .init
 
 It will initialize `xPython`. Most importantly it will create a separate thread (dedicated web worker), install `pyodide` inside that thread, create a channel, and setup all necessary packages and functions for further usage.
 
