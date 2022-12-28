@@ -159,11 +159,11 @@ import * as xPython from '@x-python/core';
 await xPython.init();
 ```
 
-Usually, we do initialize `xPython` before using other methods (like `exec`, `complete`, etc), but it's not mandatory :slightly_smiling_face: So, you can go ahead and do `xPython.exec({ code: '...' })` without doing `xPython.init()` - it will do `xPython.init()` on first `xPython.exec` (or `.complete`, `.format` and any other supported method) call if it's not initialized. The aim of the existence of a separate initialize method is to provide full flexibility to developers. The initialization process takes time and it should be possible to handle that time in the way you want. So, you can do `await xPython.init();` at the begging or do it after a certain user action or, if you are okay with your users waiting a little bit more after the first execution then you can skip the initialization process and it will be handled automatically :slightly_smiling_face:
+Usually, we do initialize `xPython` before using other methods (like `exec`, `complete`, etc), but it's not mandatory :slightly_smiling_face: So, you can go ahead and do `xPython.exec({ code: '...' })` without doing `xPython.init()` - it will do `xPython.init()` on first `xPython.exec` (or `.complete`, `.format` and any other supported method) call if it's not initialized. The aim of the existence of a separate initialize method is to provide full flexibility to developers. The initialization process takes time and it should be possible to handle that time in the way you want. So, you can do `await xPython.init();` at the beginning or do it after a certain user action or, if you are okay with your users waiting a little bit more after the first execution then you can skip the initialization process and it will be handled automatically :slightly_smiling_face:
 
 #### .exec
 
-`exec` - one of the most frequently used. Basically, it's for executing python code. A simple usage looks like this:
+`exec` is one of the most frequently used. Basically, it's for executing python code. A simple usage looks like this:
 
 ```javascript
 import * as xPython from '@x-python/core';
@@ -171,7 +171,7 @@ import * as xPython from '@x-python/core';
 await xPython.exec({ code: '1 + 1' });
 ```
 
-You also can provide a `context` with global variables, like:
+You can also provide a `context` with global variables, like:
 
 ```javascript
 import * as xPython from '@x-python/core';
@@ -195,7 +195,7 @@ await xPython.exec({ code: 'print("test")' });
 // { result: undefined, error: null, stdout: 'test', stderr: '' }
 ```
 
-Of cource you can exec multiline code snippets:
+Of course you can exec multiline code snippets:
 
 ```javascript
 import * as xPython from '@x-python/core';
@@ -223,11 +223,11 @@ np.random.rand()
 });
 ```
 
-It will autodetect `numpy` and it will install the `numpy` if it's the first time of its usage.
+It will autodetect `numpy` and it will install it if you're using it for the first time.
 
 #### .complete
 
-`.complete` is to get code completions. Simple usage looks like this:
+To get code completions you can use `xPython.complete.repl`. Simple usage looks like this:
 
 ```javascript
 import * as xPython from '@x-python/core';
@@ -237,7 +237,7 @@ await xPython.complete.repl({ code: 'import sys; sys.ver' });
 
 This example will return an array with two possible options: `version` and `version_info` :slightly_smiling_face:
 
-The full signature of this method also includes `line` and `column` options to specify the cursor position. If `line` isn't provided `xPython` will assume it's the last line and, correspondingly, if `column` isn't provided it will assume that it's the last column. So, in the previous example, it assumed that cursor at the end of `sys.var` and returned code completions based on that assumption. An example with cursor position specified:
+The full signature of this method also includes `line` and `column` options to specify the cursor position. If `line` isn't provided `xPython` will assume it's the last line and, correspondingly, if `column` isn't provided it will assume that it's the last column. So, in the previous example, it assumed that cursor is at the end of `sys.var` and returned code completions based on that assumption. An example with cursor position specified:
 
 ```javascript
 await xPython.complete.repl({
@@ -255,7 +255,7 @@ factorial(x)
 
 This will return the only available option here: `test`.
 
-The curious eye may notice that instead of `.complete` we called `.complete.repl`. When it comes to code completion at least two environments can be your target: `REPL` and `Script/File/Editor`. And based on the environment code completion can vary. In the current version, we do support only `REPL`, but very soon other options also will be available ⏳
+The curious eye may notice that instead of `.complete` we called `.complete.repl`. When it comes to code completion at least two environments can be your target: `REPL` and `Script/File/Editor`. And based on the environment code completion can vary. In the current version, we do support only `REPL`, but very soon other options will also be available ⏳
 
 #### .format
 
@@ -282,7 +282,7 @@ console.log(result);
 
 #### .install
 
-The entire standard library is available out of the box, so you can import `sys`, `math`, or `os` without doing anything special. In addition to this `pyodide` also provides a list of built-in packages, like `numpy`, `pandas`, `scipy`, `matplotlib`, `scikit-learn`, etc. Check the full list [here](https://pyodide.org/en/stable/usage/packages-in-pyodide.html). You can use any package from the above-mentioned list and it will be installed automatically and on demand. And if that's not enough you still can install any pure `Python` packages with wheels available on `PyPI` :slightly_smiling_face: Let's install the package called `nicelog`.
+The entire standard library is available out of the box, so you can import `sys`, `math`, or `os` without doing anything special. In addition to this `pyodide` also provides a list of built-in packages, like `numpy`, `pandas`, `scipy`, `matplotlib`, `scikit-learn`, etc. Check the full list [here](https://pyodide.org/en/stable/usage/packages-in-pyodide.html). You can use any package from the above-mentioned list and it will be installed automatically and on demand. And if that's not enough you can still install any pure `Python` packages with wheels available on `PyPI` :slightly_smiling_face: Let's install the package called `nicelog`.
 
 ```javascript
 import * as xPython from '@x-python/core';

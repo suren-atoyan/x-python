@@ -1,7 +1,6 @@
 {
   "name": "@x-python/core",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/suren-atoyan/x-python",
@@ -23,7 +22,7 @@
     "lint": "npx eslint src",
     "build": "tsc && vite build",
     "build:watch": "tsc && vite build --watch",
-    "prepublish": "npm run lint && npm run build",
+    "prepublishOnly": "npm run lint && npm run build",
     "prepare": "husky install"
   },
   "devDependencies": {
