@@ -2,7 +2,6 @@
  * xPython module
  * @module xPython
  */
-import produce from 'immer';
 import state from 'state-local';
 
 import defaultConfig from './config';
@@ -22,8 +21,12 @@ import {
   InstallReturnValue,
   ModuleState,
   Payload,
+  ExecCallback,
+  CompleteCallback,
+  InstallCallback,
+  FormatCallback,
 } from './types';
-import { ensureCallbackIdExists, once } from './utils';
+import { ensureCallbackIdExists, once, removeCallback, addCallback } from './utils';
 
 import Worker from './worker?worker&inline';
 
@@ -76,9 +79,7 @@ function handleExec({ result, error, id, stderr, stdout }: ExecParams) {
   const { resolve } = execCallbacks[id];
 
   setState({
-    execCallbacks: produce(execCallbacks, (draft) => {
-      delete draft[id];
-    }),
+    execCallbacks: removeCallback(execCallbacks, id),
   });
 
   resolve({ result, error, stderr, stdout });
@@ -92,9 +93,7 @@ function handleComplete({ result, error, id }: CompleteParams) {
   const { resolve, reject } = completeCallbacks[id];
 
   setState({
-    completeCallbacks: produce(completeCallbacks, (draft) => {
-      delete draft[id];
-    }),
+    completeCallbacks: removeCallback(completeCallbacks, id),
   });
 
   if (error) {
@@ -113,9 +112,7 @@ function handleInstall({ success, error, id }: InstallParams) {
   const { resolve, reject } = installCallbacks[id];
 
   setState({
-    installCallbacks: produce(installCallbacks, (draft) => {
-      delete draft[id];
-    }),
+    installCallbacks: removeCallback(installCallbacks, id),
   });
 
   if (error) {
@@ -134,9 +131,7 @@ function handleFormat({ result, error, id }: FormatParams) {
   const { resolve } = formatCallbacks[id];
 
   setState({
-    formatCallbacks: produce(formatCallbacks, (draft) => {
-      delete draft[id];
-    }),
+    formatCallbacks: removeCallback(formatCallbacks, id),
   });
 
   resolve({ result, error });
@@ -192,9 +187,7 @@ async function exec(payload: ExecPayload): Promise<ExecReturnValue> {
     channel.command(payload, ActionType.EXEC);
 
     setState({
-      execCallbacks: produce(execCallbacks, (draft) => {
-        draft[commandUniqueId] = { resolve };
-      }),
+      execCallbacks: addCallback<ExecCallback>(execCallbacks, commandUniqueId, { resolve }),
     });
   });
 }
@@ -226,8 +219,9 @@ const complete = {
       channel.command({ code, line: normalizeLine, column: normalizeColumn }, ActionType.COMPLETE);
 
       setState({
-        completeCallbacks: produce(completeCallbacks, (draft) => {
-          draft[commandUniqueId] = { resolve, reject };
+        completeCallbacks: addCallback<CompleteCallback>(completeCallbacks, commandUniqueId, {
+          resolve,
+          reject,
         }),
       });
     });
@@ -241,8 +235,9 @@ async function install(packages: string[]) {
     channel.command({ packages }, ActionType.INSTALL);
 
     setState({
-      installCallbacks: produce(installCallbacks, (draft) => {
-        draft[commandUniqueId] = { resolve, reject };
+      installCallbacks: addCallback<InstallCallback>(installCallbacks, commandUniqueId, {
+        resolve,
+        reject,
       }),
     });
   });
@@ -255,8 +250,9 @@ async function format(payload: FormatPayload): Promise<FormatReturnValue> {
     channel.command(payload, ActionType.FORMAT);
 
     setState({
-      formatCallbacks: produce(formatCallbacks, (draft) => {
-        draft[commandUniqueId] = { resolve, reject };
+      formatCallbacks: addCallback<FormatCallback>(formatCallbacks, commandUniqueId, {
+        resolve,
+        reject,
       }),
     });
   });
