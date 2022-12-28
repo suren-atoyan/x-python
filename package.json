@@ -15,14 +15,19 @@
     "python",
     "python in browser",
     "javascript",
-    "typescript"
+    "webassembly"
   ],
+  "main": "./dist/x-python.umd.cjs",
+  "module": "./dist/x-python.js",
+  "unpkg": "./dist/x-python.umd.cjs",
+  "jsdelivr": "./dist/x-python.umd.cjs",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "dev": "vite",
     "lint": "npx eslint src",
     "build": "tsc && vite build",
     "build:watch": "tsc && vite build --watch",
-    "prepublishOnly": "npm run lint && npm run build",
+    "prepublishOnly": "npm run lint && npm run build && rm -rf ./dist/assets",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -36,14 +41,13 @@
     "vite": "^4.0.0",
     "vite-plugin-dts": "^1.7.1"
   },
-  "types": "./dist/main.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/main.ts.js",
-      "require": "./dist/main.ts.umd.js"
+      "import": "./dist/x-python.js",
+      "require": "./dist/x-python.umd.cjs"
     }
   },
   "dependencies": {
