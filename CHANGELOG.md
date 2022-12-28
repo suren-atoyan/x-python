@@ -1,3 +1,10 @@
+## 0.0.4
+
+###### _Dec 28, 2022_
+
+- create a separate field in config for `loadPyodide` options
+- fully pass `config.loadPyodideOptions` to `loadPyodide`
+
 ## 0.0.3
 
 ###### _Dec 28, 2022_
