@@ -12,9 +12,10 @@ export default defineConfig({
   ],
   build: {
     lib: {
+      formats: ['cjs', 'es', 'umd'],
       // Could also be a dictionary or array of multiple entry points
       entry: resolve(__dirname, 'src/main.ts'),
-      name: '@x-python/core',
+      name: 'xPython',
       fileName: 'x-python',
     },
     rollupOptions: {

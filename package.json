@@ -17,7 +17,7 @@
     "javascript",
     "webassembly"
   ],
-  "main": "./dist/x-python.umd.cjs",
+  "main": "./dist/x-python.cjs",
   "module": "./dist/x-python.js",
   "unpkg": "./dist/x-python.umd.cjs",
   "jsdelivr": "./dist/x-python.umd.cjs",
@@ -47,7 +47,7 @@
   "exports": {
     ".": {
       "import": "./dist/x-python.js",
-      "require": "./dist/x-python.umd.cjs"
+      "require": "./dist/x-python.cjs"
     }
   },
   "dependencies": {
