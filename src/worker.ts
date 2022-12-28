@@ -20,9 +20,7 @@ import { converteToJs, extractMainErrorMessage } from './utils';
 
 async function main() {
   // eslint-disable-next-line no-restricted-globals
-  const pyodide: PyodideInterface = await loadPyodide({
-    indexURL: config.pyodideSource,
-  });
+  const pyodide: PyodideInterface = await loadPyodide(config.loadPyodideOptions);
 
   await pyodide.loadPackage('micropip');
 
