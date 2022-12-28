@@ -51,7 +51,6 @@
     }
   },
   "dependencies": {
-    "immer": "^9.0.16",
     "pyodide": "^0.21.3",
     "state-local": "^1.0.7"
   },

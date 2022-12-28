@@ -17,10 +17,9 @@ export default defineConfig({
       fileName: 'x-python',
     },
     rollupOptions: {
-      external: ['immer', 'pyodide'],
+      external: ['pyodide'],
       output: {
         globals: {
-          immer: 'produce',
           pyodide: 'pyodide',
         },
       },
