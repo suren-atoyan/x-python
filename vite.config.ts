@@ -12,17 +12,14 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      formats: ['cjs', 'es', 'umd'],
-      // Could also be a dictionary or array of multiple entry points
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'xPython',
       fileName: 'x-python',
     },
     rollupOptions: {
-      external: ['state-local', 'immer', 'pyodide'],
+      external: ['immer', 'pyodide'],
       output: {
         globals: {
-          'state-local': 'state',
           immer: 'produce',
           pyodide: 'pyodide',
         },
