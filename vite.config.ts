@@ -15,7 +15,7 @@ export default defineConfig({
       // Could also be a dictionary or array of multiple entry points
       entry: resolve(__dirname, 'src/main.ts'),
       name: '@x-python/core',
-      fileName: 'main.ts',
+      fileName: 'x-python',
     },
     rollupOptions: {
       external: ['state-local', 'immer', 'pyodide'],
