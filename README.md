@@ -4,6 +4,8 @@
   <img align="center" width="30%" height="auto" src="./playground/logo.svg" style="margin-bottom: 10px">
 </a>
 
+<p />
+
 A complete solution for python-in-browser. (check the [Usage](#usage) section :point_down:)
 
 <hr />
