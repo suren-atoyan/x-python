@@ -182,7 +182,7 @@ await xPython.exec({ code: 'x + 1', context: { x: 1 } });
 But let's take a closer look at what it returns. In both cases we will get something like this:
 
 ```js
-{ result: 2, error: null, stdout: 'test', stderr: '' }
+{ result: 2, error: null, stdout: '', stderr: '' }
 ```
 
 `result` is what is returned from the executed script. But we also have `stdout` (and `stderr`) for standard output streams. If we execute `print("test")` nothing will be returned, but you will have a `stdout`.
