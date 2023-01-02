@@ -35,6 +35,7 @@ type ActionCallbacks = Callbacks<ActionReturnValue>;
 type JSCallbacks = Callbacks<JSFnCallParams>;
 
 type JSFunctions = {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   [fnName: string]: Function;
 };
 // ====== ** ======

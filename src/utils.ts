@@ -99,6 +99,7 @@ function ensureCallbackIdExists(id: CommandUniqueId, doesIdExist: boolean) {
 }
 
 function removeCallback(callbacks: ActionCallbacks, removingId: CommandUniqueId) {
+  // eslint-disable-next-line
   const { [removingId]: removingCallback, ...rest } = callbacks;
 
   return rest;
@@ -115,6 +116,7 @@ function addCallback<T>(
 function addJsFunction(
   jsFunctions: JSFunctions,
   id: CommandUniqueId | string,
+  // eslint-disable-next-line @typescript-eslint/ban-types
   jsFunction: Function,
 ) {
   return { ...jsFunctions, [id]: jsFunction };
