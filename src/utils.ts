@@ -1,12 +1,6 @@
 import type { PyProxy, PyodideInterface } from 'pyodide';
 
-import {
-  CommandUniqueId,
-  Callback,
-  ActionCallbacks,
-  ActionReturnValue,
-  JSFunctions,
-} from './types';
+import { CommandUniqueId, Callback, ActionCallbacks, JSFunctions } from './types';
 
 const WRAPPER_FUNCTION_NAME = 'wrapper';
 
