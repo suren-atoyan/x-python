@@ -1,8 +1,10 @@
 // payloads
 type ExecPayload = {
   code: string;
-  context?: Record<string, unknown>;
+  context?: Context;
 };
+
+type Context = Record<string, unknown | ComplexPayload>;
 
 type CompletePayload = {
   code: string;
@@ -22,34 +24,19 @@ type Payload = ExecPayload | CompletePayload | InstallPayload | FormatPayload;
 // ====== ** ======
 
 // callbacks
-type ExecCallback = {
-  resolve: (value: ExecReturnValue) => void;
-};
-
-type ExecCallbacks = Record<CommandUniqueId, ExecCallback>;
-
-type CompleteCallback = {
-  resolve: (value: CompletionResults) => void;
+type Callback<T> = {
+  resolve: (value: T) => void;
   reject: (value: string) => void;
 };
 
-type CompleteCallbacks = Record<CommandUniqueId, CompleteCallback>;
+type Callbacks<T> = Record<CommandUniqueId, Callback<T>>;
 
-type InstallCallback = {
-  resolve: (value: InstallReturnValue) => void;
-  reject: (value: string) => void;
+type ActionCallbacks = Callbacks<ActionReturnValue>;
+type JSCallbacks = Callbacks<JSFnCallParams>;
+
+type JSFunctions = {
+  [fnName: string]: Function;
 };
-
-type InstallCallbacks = Record<CommandUniqueId, InstallCallback>;
-
-type FormatCallback = {
-  resolve: (value: FormatReturnValue) => void;
-  reject: (value: string) => void;
-};
-
-type FormatCallbacks = Record<CommandUniqueId, FormatCallback>;
-
-type Callbacks = FormatCallbacks | InstallCallbacks | CompleteCallbacks | ExecCallbacks;
 // ====== ** ======
 
 // params
@@ -78,6 +65,14 @@ type FormatParams = {
   result: string | null;
   error: string | null;
 };
+
+type JSFnCallParams = {
+  id: CommandUniqueId;
+  args: unknown[];
+  name: string;
+};
+
+type Params = ExecParams | CompleteParams | InstallParams | FormatParams;
 // ====== ** ======
 
 // return values
@@ -85,6 +80,11 @@ type ExecReturnValue = Omit<ExecParams, 'id'>;
 type CompleteReturnValue = Omit<CompleteParams, 'id'>;
 type InstallReturnValue = Omit<InstallParams, 'id'>;
 type FormatReturnValue = Omit<FormatParams, 'id'>;
+type ActionReturnValue =
+  | ExecReturnValue
+  | CompleteReturnValue
+  | InstallReturnValue
+  | FormatReturnValue;
 // ====== ** ======
 
 type ChannelTransmitData = {
@@ -102,6 +102,11 @@ enum ActionType {
   COMPLETE,
   INSTALL,
   FORMAT,
+  JS_FN_CALL,
+}
+
+enum PayloadType {
+  FN = '__function__',
 }
 
 type CompletionResult = {
@@ -117,19 +122,26 @@ type CompletionResults = {
   matches: CompletionMatch[];
 };
 
-type CommandUniqueId = number;
+type CommandUniqueId = string;
 
-type ModuleState = {
+type MainModuleState = {
   config: object;
   pyodideWorker: Worker | null;
-  execCallbacks: ExecCallbacks;
-  completeCallbacks: CompleteCallbacks;
-  installCallbacks: InstallCallbacks;
-  formatCallbacks: FormatCallbacks;
+  callbacks: ActionCallbacks;
   commandUniqueId: CommandUniqueId;
+  jsFunctions: JSFunctions;
 };
 
-export { ChannelSetupStatus, ActionType };
+type WorkerModuleState = {
+  jsCallbacks: JSCallbacks;
+};
+
+type ComplexPayload = {
+  type: PayloadType;
+  name: string;
+};
+
+export { ChannelSetupStatus, ActionType, PayloadType };
 export type {
   // payloads
   Payload,
@@ -137,24 +149,23 @@ export type {
   CompletePayload,
   InstallPayload,
   FormatPayload,
+  ComplexPayload,
+  Context,
   // ====== ** ======
   // callbacks
-  Callbacks,
-  ExecCallback,
-  ExecCallbacks,
-  CompleteCallback,
-  CompleteCallbacks,
-  InstallCallback,
-  InstallCallbacks,
-  FormatCallback,
-  FormatCallbacks,
+  Callback,
+  ActionCallbacks,
+  JSFunctions,
   // ====== ** ======
   // params
+  Params,
   ExecParams,
   CompleteParams,
   InstallParams,
   FormatParams,
+  JSFnCallParams,
   // return values
+  ActionReturnValue,
   ExecReturnValue,
   CompleteReturnValue,
   InstallReturnValue,
@@ -163,6 +174,7 @@ export type {
   ChannelTransmitData,
   CompletionResult,
   CompletionResults,
-  ModuleState,
+  MainModuleState,
+  WorkerModuleState,
   CommandUniqueId,
 };
