@@ -35,10 +35,19 @@ async function main() {
   const pyodide: PyodideInterface = await loadPyodide(config.loadPyodideOptions);
 
   await pyodide.loadPackage('micropip');
-
   await pyodide.runPythonAsync(pythonSetupCode);
 
-  postMessage(ChannelSetupStatus.READY);
+  let interruptBuffer;
+
+  if (self.SharedArrayBuffer) {
+    interruptBuffer = new Uint8Array(new self.SharedArrayBuffer(1));
+    pyodide.setInterruptBuffer(interruptBuffer);
+  }
+
+  postMessage({
+    status: ChannelSetupStatus.READY,
+    interruptBuffer,
+  });
 
   const actions = {
     [ActionType.EXEC]: async ({ code, context = {} }: ExecPayload): Promise<ExecReturnValue> => {
