@@ -1,6 +1,6 @@
 {
   "name": "@x-python/core",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/suren-atoyan/x-python",
@@ -17,10 +17,10 @@
     "javascript",
     "webassembly"
   ],
-  "main": "./dist/x-python.umd.cjs",
+  "main": "./dist/x-python.umd.js",
   "module": "./dist/x-python.js",
-  "unpkg": "./dist/x-python.umd.cjs",
-  "jsdelivr": "./dist/x-python.umd.cjs",
+  "unpkg": "./dist/x-python.umd.js",
+  "jsdelivr": "./dist/x-python.umd.js",
   "types": "./dist/main.d.ts",
   "scripts": {
     "dev": "vite",
@@ -47,7 +47,7 @@
   "exports": {
     ".": {
       "import": "./dist/x-python.js",
-      "require": "./dist/x-python.umd.cjs"
+      "require": "./dist/x-python.umd.js"
     }
   },
   "dependencies": {

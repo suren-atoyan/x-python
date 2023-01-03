@@ -1,3 +1,11 @@
+## 0.0.6
+
+###### _Jan 4, 2023_
+
+- fix `husky` issue by making `pre-commit` script executable
+- make context-aware js functions available in python environment
+- implement `interrupt` method with `interruptBuffer` (`SharedArrayBuffer`)
+
 ## 0.0.5
 
 ###### _Dec 28, 2022_
