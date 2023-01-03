@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import type { ModuleFormat } from 'rollup';
 
 export default defineConfig({
   plugins: [
@@ -25,7 +26,14 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/main.ts'),
       name: 'xPython',
-      fileName: 'x-python',
+      fileName: (format: ModuleFormat) => {
+        switch (format) {
+          case 'es':
+            return 'x-python.js';
+          case 'umd':
+            return 'x-python.umd.js';
+        }
+      },
     },
     rollupOptions: {
       external: ['pyodide'],
