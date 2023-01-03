@@ -1,6 +1,6 @@
 import type { PyProxy, PyodideInterface } from 'pyodide';
 
-import type { CommandUniqueId, Callbacks } from './types';
+import { CommandUniqueId, Callback, ActionCallbacks, JSFunctions, JSCallbacks } from './types';
 
 const WRAPPER_FUNCTION_NAME = 'wrapper';
 
@@ -98,14 +98,36 @@ function ensureCallbackIdExists(id: CommandUniqueId, doesIdExist: boolean) {
   }
 }
 
-function removeCallback(callbacks: Callbacks, removingId: CommandUniqueId) {
+// NOTE: the below utilities will be replaced with immer in the next version
+function removeCallback(callbacks: ActionCallbacks, removingId: CommandUniqueId) {
+  // eslint-disable-next-line
   const { [removingId]: removingCallback, ...rest } = callbacks;
 
   return rest;
 }
 
-function addCallback<T>(callbacks: Callbacks, id: CommandUniqueId, callback: T) {
+function addCallback<T>(
+  callbacks: ActionCallbacks | JSCallbacks,
+  id: CommandUniqueId | string,
+  callback: Callback<T>,
+) {
   return { ...callbacks, [id]: callback };
+}
+
+function addJsFunction(
+  jsFunctions: JSFunctions,
+  id: CommandUniqueId | string,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  jsFunction: Function,
+) {
+  return { ...jsFunctions, [id]: jsFunction };
+}
+
+function removeJsFunction(jsFunctions: JSFunctions, fnName: string) {
+  // eslint-disable-next-line
+  const { [fnName]: removingFunctionName, ...rest } = jsFunctions;
+
+  return rest;
 }
 
 export {
@@ -115,4 +137,6 @@ export {
   ensureCallbackIdExists,
   removeCallback,
   addCallback,
+  addJsFunction,
+  removeJsFunction,
 };

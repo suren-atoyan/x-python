@@ -8,25 +8,24 @@ import defaultConfig from './config';
 import {
   ActionType,
   ChannelSetupStatus,
-  CompleteParams,
   CompletePayload,
   CompletionResults,
-  ExecParams,
   ExecPayload,
   ExecReturnValue,
-  FormatParams,
+  Response,
   FormatPayload,
   FormatReturnValue,
-  InstallParams,
   InstallReturnValue,
-  ModuleState,
+  MainModuleState,
   Payload,
-  ExecCallback,
-  CompleteCallback,
-  InstallCallback,
-  FormatCallback,
+  Context,
+  PayloadType,
+  JSFnCallPayload,
+  CommandUniqueId,
+  ChannelTransmitData,
+  ActionReturnValue,
 } from './types';
-import { ensureCallbackIdExists, once, removeCallback, addCallback } from './utils';
+import { ensureCallbackIdExists, once, removeCallback, addCallback, addJsFunction } from './utils';
 
 import Worker from './worker?worker&inline';
 
@@ -36,8 +35,6 @@ const hasWorkerSupport = Boolean(globalThis.Worker);
 const [getState, setState] = state.create({
   config: defaultConfig,
   pyodideWorker: null,
-  // python runner function (runPythonCode) can
-  // be called from different places.
   // To avoid chronological mismatches and to support a robust
   // system for non-sequential executions
   // we define an identifier (an incrementing number) for
@@ -46,96 +43,34 @@ const [getState, setState] = state.create({
   // this particular method for handling above described issue
   // was taken from the official pyodide documentation
   // https://pyodide.org/en/stable/usage/webworker.html#the-worker-api
-  execCallbacks: {},
-  completeCallbacks: {},
-  installCallbacks: {},
-  formatCallbacks: {},
+  callbacks: {},
   commandUniqueId: 0,
-} as ModuleState);
+  jsFunctions: {},
+  interruptBuffer: null,
+} as MainModuleState);
 
 const channel = {
   async ensureWorkerIsSetup() {
-    const { pyodideWorker } = getState() as ModuleState;
+    const { pyodideWorker } = getState() as MainModuleState;
 
     if (!pyodideWorker) {
       await init();
     }
   },
-  async command(payload: Payload, action: ActionType) {
+  async command(data: Payload | ActionReturnValue, action: ActionType, id?: CommandUniqueId) {
     await channel.ensureWorkerIsSetup();
-    const { commandUniqueId, pyodideWorker } = getState() as ModuleState;
+    const { commandUniqueId, pyodideWorker, interruptBuffer } = getState() as MainModuleState;
 
-    setState({ commandUniqueId: commandUniqueId + 1 });
+    // clear interruptBuffer in case it was accidentally left set after previous code completed.
+    if (interruptBuffer) interruptBuffer[0] = 0;
 
-    pyodideWorker?.postMessage({ payload, id: commandUniqueId, action });
+    if (!id) {
+      setState({ commandUniqueId: commandUniqueId + 1 });
+    }
+
+    pyodideWorker?.postMessage({ data, id: id ?? commandUniqueId, action });
   },
 };
-
-function handleExec({ result, error, id, stderr, stdout }: ExecParams) {
-  const { execCallbacks } = getState() as ModuleState;
-
-  ensureCallbackIdExists(id, Boolean(execCallbacks[id]));
-
-  const { resolve } = execCallbacks[id];
-
-  setState({
-    execCallbacks: removeCallback(execCallbacks, id),
-  });
-
-  resolve({ result, error, stderr, stdout });
-}
-
-function handleComplete({ result, error, id }: CompleteParams) {
-  const { completeCallbacks } = getState() as ModuleState;
-
-  ensureCallbackIdExists(id, Boolean(completeCallbacks[id]));
-
-  const { resolve, reject } = completeCallbacks[id];
-
-  setState({
-    completeCallbacks: removeCallback(completeCallbacks, id),
-  });
-
-  if (error) {
-    reject?.(error);
-    return;
-  }
-
-  resolve(result);
-}
-
-function handleInstall({ success, error, id }: InstallParams) {
-  const { installCallbacks } = getState() as ModuleState;
-
-  ensureCallbackIdExists(id, Boolean(installCallbacks[id]));
-
-  const { resolve, reject } = installCallbacks[id];
-
-  setState({
-    installCallbacks: removeCallback(installCallbacks, id),
-  });
-
-  if (error) {
-    reject?.(error);
-    return;
-  }
-
-  resolve({ success, error });
-}
-
-function handleFormat({ result, error, id }: FormatParams) {
-  const { formatCallbacks } = getState() as ModuleState;
-
-  ensureCallbackIdExists(id, Boolean(formatCallbacks[id]));
-
-  const { resolve } = formatCallbacks[id];
-
-  setState({
-    formatCallbacks: removeCallback(formatCallbacks, id),
-  });
-
-  resolve({ result, error });
-}
 
 const init = once<Promise<Worker>>(function init(): Promise<Worker> {
   return new Promise((resolve, reject) => {
@@ -146,24 +81,26 @@ const init = once<Promise<Worker>>(function init(): Promise<Worker> {
     const pyodideWorker: Worker = new Worker();
 
     pyodideWorker.onmessage = function onmessage(event) {
-      if (event.data === ChannelSetupStatus.READY) {
-        setState({ pyodideWorker });
+      if (event.data?.status === ChannelSetupStatus.READY) {
+        setState({ pyodideWorker, interruptBuffer: event.data.interruptBuffer });
 
-        pyodideWorker.onmessage = function onmessage(event) {
-          const { action, ...payload } = event.data;
+        pyodideWorker.onmessage = function onmessage(event: MessageEvent<ChannelTransmitData>) {
+          const { action, id, data } = event.data;
 
+          // All messages received from the python worker will land here.
+          // Here we branch out to two main message types.
+          // One is the response to different actions that we sent before from the main thread.
+          // We call it `handleActionResponse` - image one called `xPython.exec({ code: '1 + 1' })`;
+          // we send `exec` action to the python worker, we receive the result and `handleActionResponse` is for handling that response.
+          // Another one is for handling JS function calls that were being called from python environment.
+          // This time the initiator is the python worker and in the main thread we just handle that command from
+          // python environemnt.
           switch (action) {
-            case ActionType.EXEC:
-              handleExec(payload);
+            case ActionType.JS_FN_CALL:
+              handleJSFnCaLL(id, data as JSFnCallPayload);
               break;
-            case ActionType.COMPLETE:
-              handleComplete(payload);
-              break;
-            case ActionType.INSTALL:
-              handleInstall(payload);
-              break;
-            case ActionType.FORMAT:
-              handleFormat(payload);
+            default:
+              handleActionResponse(id, data as Response);
               break;
           }
         };
@@ -181,13 +118,15 @@ const init = once<Promise<Worker>>(function init(): Promise<Worker> {
 });
 
 async function exec(payload: ExecPayload): Promise<ExecReturnValue> {
-  return new Promise<ExecReturnValue>((resolve) => {
-    const { execCallbacks, commandUniqueId } = getState() as ModuleState;
+  return new Promise<ExecReturnValue>((resolve, reject) => {
+    const { callbacks, commandUniqueId } = getState() as MainModuleState;
 
-    channel.command(payload, ActionType.EXEC);
+    channel.command(sanitizePayload(payload), ActionType.EXEC);
+
+    // TODO (Suren): remove js functions related to this command
 
     setState({
-      execCallbacks: addCallback<ExecCallback>(execCallbacks, commandUniqueId, { resolve }),
+      callbacks: addCallback<ExecReturnValue>(callbacks, commandUniqueId, { resolve, reject }),
     });
   });
 }
@@ -195,7 +134,7 @@ async function exec(payload: ExecPayload): Promise<ExecReturnValue> {
 const complete = {
   async repl(payload: CompletePayload): Promise<CompletionResults> {
     return new Promise<CompletionResults>((resolve, reject) => {
-      const { commandUniqueId, completeCallbacks } = getState() as ModuleState;
+      const { commandUniqueId, callbacks } = getState() as MainModuleState;
 
       const { code, line, column } = payload;
 
@@ -219,7 +158,7 @@ const complete = {
       channel.command({ code, line: normalizeLine, column: normalizeColumn }, ActionType.COMPLETE);
 
       setState({
-        completeCallbacks: addCallback<CompleteCallback>(completeCallbacks, commandUniqueId, {
+        callbacks: addCallback<CompletionResults>(callbacks, commandUniqueId, {
           resolve,
           reject,
         }),
@@ -230,12 +169,12 @@ const complete = {
 
 async function install(packages: string[]) {
   return new Promise<InstallReturnValue>((resolve, reject) => {
-    const { installCallbacks, commandUniqueId } = getState() as ModuleState;
+    const { callbacks, commandUniqueId } = getState() as MainModuleState;
 
     channel.command({ packages }, ActionType.INSTALL);
 
     setState({
-      installCallbacks: addCallback<InstallCallback>(installCallbacks, commandUniqueId, {
+      callbacks: addCallback<InstallReturnValue>(callbacks, commandUniqueId, {
         resolve,
         reject,
       }),
@@ -245,12 +184,12 @@ async function install(packages: string[]) {
 
 async function format(payload: FormatPayload): Promise<FormatReturnValue> {
   return new Promise<FormatReturnValue>((resolve, reject) => {
-    const { formatCallbacks, commandUniqueId } = getState() as ModuleState;
+    const { callbacks, commandUniqueId } = getState() as MainModuleState;
 
     channel.command(payload, ActionType.FORMAT);
 
     setState({
-      formatCallbacks: addCallback<FormatCallback>(formatCallbacks, commandUniqueId, {
+      callbacks: addCallback<FormatReturnValue>(callbacks, commandUniqueId, {
         resolve,
         reject,
       }),
@@ -258,4 +197,92 @@ async function format(payload: FormatPayload): Promise<FormatReturnValue> {
   });
 }
 
-export { init, exec, complete, install, format };
+function interrupt() {
+  const { interruptBuffer } = getState() as MainModuleState;
+
+  if (!globalThis.SharedArrayBuffer) {
+    throw new Error(`
+      \`.interrupt\` method uses SharedArrayBuffer which requires "cross-origin-isolation" to be enabled.
+      To enable "cross-origin-isolation" check this article - https://web.dev/cross-origin-isolation-guide/#enable-cross-origin-isolation
+    `);
+  }
+
+  if (interruptBuffer) interruptBuffer[0] = 2;
+}
+
+// * ============== * //
+
+function handleActionResponse(id: CommandUniqueId, data: ActionReturnValue) {
+  const { callbacks } = getState() as MainModuleState;
+
+  ensureCallbackIdExists(id, Boolean(callbacks[id]));
+
+  const { resolve, reject } = callbacks[id];
+
+  setState({
+    callbacks: removeCallback(callbacks, id),
+  });
+
+  if (data.error) {
+    reject?.(data.error);
+    return;
+  }
+
+  resolve(data);
+}
+
+async function handleJSFnCaLL(id: CommandUniqueId, { args, name }: JSFnCallPayload) {
+  const { jsFunctions } = getState() as MainModuleState;
+
+  let result, error;
+
+  try {
+    result = await jsFunctions[name]?.(...args);
+  } catch (err) {
+    error = err as string;
+  }
+
+  channel.command({ result, error }, ActionType.JS_FN_CALL, id);
+}
+
+// `context` object will be passed to python through a separate thread/worker.
+// When you postMessage a datum from one thread to another
+// that datum is being cloned via "structured clone algorithm".
+// functions cannot be duplicated by the structured clone algorithm, as well as
+// classes, DOM nodes, etc.
+// Here we do replace all functions in the context with `ComplexPayload`s.
+// `ComplexPayload`s have a "cloneable" structure and can be passed to another thread.
+// They will be treated differently before passing to the python environment.
+function replaceFunctions(context: Context): Context {
+  const { jsFunctions } = getState() as MainModuleState;
+
+  return Object.entries(context).reduce((acc, [key, value]) => {
+    if (typeof value === 'function') {
+      acc[key] = {
+        type: PayloadType.FN,
+        name: value.name,
+      };
+
+      setState({
+        jsFunctions: addJsFunction(jsFunctions, value.name, value),
+      });
+    } else {
+      acc[key] = value;
+    }
+
+    return acc;
+  }, {} as Context);
+}
+
+function sanitizePayload(payload: ExecPayload): ExecPayload {
+  if (payload.context) {
+    return {
+      ...payload,
+      context: replaceFunctions(payload.context),
+    };
+  }
+
+  return payload;
+}
+
+export { init, exec, complete, install, format, interrupt };
