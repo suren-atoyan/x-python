@@ -4,19 +4,31 @@ import { loadPyodide } from 'pyodide';
 
 import config from './config';
 import pythonSetupCode from './setup.py?raw';
-import type {
+import state from 'state-local';
+import {
   ChannelTransmitData,
   CompletePayload,
   CompleteReturnValue,
+  ComplexPayload,
   ExecPayload,
   ExecReturnValue,
   FormatPayload,
   FormatReturnValue,
   InstallPayload,
   InstallReturnValue,
+  PayloadType,
+  WorkerModuleState,
+  JSFnCallReturnValue,
+  CommandUniqueId,
 } from './types';
 import { ActionType, ChannelSetupStatus } from './types';
-import { converteToJs, extractMainErrorMessage } from './utils';
+import { addCallback, converteToJs, extractMainErrorMessage } from './utils';
+
+/** the local state of the module */
+const [getState, setState] = state.create({
+  callbacks: {},
+  commandUniqueId: 0,
+} as WorkerModuleState);
 
 async function main() {
   // eslint-disable-next-line no-restricted-globals
@@ -30,9 +42,17 @@ async function main() {
 
   const actions = {
     [ActionType.EXEC]: async ({ code, context = {} }: ExecPayload): Promise<ExecReturnValue> => {
+      const callbackIdsToCleanUp: CommandUniqueId[] = [];
       // Set context values to global python namespace
       Object.entries(context).forEach(([variableName, value]) => {
-        pyodide.globals.set(variableName, pyodide.toPy(value));
+        if ((value as ComplexPayload)?.type === PayloadType.FN) {
+          pyodide.globals.set(
+            variableName,
+            generateComplexPayloadHandler(variableName, callbackIdsToCleanUp),
+          );
+        } else {
+          pyodide.globals.set(variableName, pyodide.toPy(value));
+        }
       });
 
       try {
@@ -57,18 +77,21 @@ async function main() {
           error: extractMainErrorMessage((error as Error).message),
         };
       } finally {
-        // Set context values from global python namespace.
+        const { callbacks } = getState() as WorkerModuleState;
+        // Remove context values from global python namespace.
         // NOTE: there is an open issue related to this
         // https://github.com/pyodide/pyodide/issues/703
-        // the current open is one suggested way.
         // People were looking for an option like
         // pyodide.globals.clean() or similar.
-        // The issue with the implementation of this
-        // first of all is the fact that pyodide.globals contains builtins,
+        // The issue with that is the fact that pyodide.globals contains builtins,
         // like '__name__', '__doc__', '__package__', '__loader__', '__spec__', etc.
         // So, currently, we do the "cleanup" process manually.
         Object.entries(context).forEach(([variableName]) => {
           pyodide.globals.set(variableName, pyodide.toPy(null)?.toString());
+        });
+
+        callbackIdsToCleanUp.forEach((id) => {
+          delete callbacks[id];
         });
       }
     },
@@ -85,8 +108,6 @@ async function main() {
     [ActionType.INSTALL]: async ({ packages }: InstallPayload): Promise<InstallReturnValue> => {
       const installData = await pyodide.globals.get('install_pacakge')(packages[0]);
 
-      console.log(converteToJs(installData, pyodide));
-
       return converteToJs(installData, pyodide);
     },
     [ActionType.FORMAT]: async ({ code }: FormatPayload): Promise<FormatReturnValue> => {
@@ -97,49 +118,74 @@ async function main() {
   };
 
   onmessage = async function onmessage(event: MessageEvent<ChannelTransmitData>) {
-    const { id, action = ActionType.EXEC } = event.data;
+    const { id, action = ActionType.EXEC, data } = event.data;
 
-    switch (action) {
-      case ActionType.EXEC:
-        const execData = await actions[ActionType.EXEC](event.data.payload as ExecPayload);
+    if (action === ActionType.JS_FN_CALL) {
+      handleJSFnResponse(data as JSFnCallReturnValue, id);
+    } else {
+      // TODO (Suren): simplify this
+      let result;
+      switch (action) {
+        case ActionType.EXEC:
+          result = await actions[ActionType.EXEC](data as ExecPayload);
+          break;
+        case ActionType.COMPLETE:
+          result = await actions[ActionType.COMPLETE](data as CompletePayload);
+          break;
+        case ActionType.INSTALL:
+          result = await actions[ActionType.INSTALL](data as InstallPayload);
+          break;
+        case ActionType.FORMAT:
+          result = await actions[ActionType.FORMAT](data as FormatPayload);
+          break;
+      }
 
-        postMessage({
-          ...execData,
-          id,
-          action,
-        });
-        break;
-      case ActionType.COMPLETE:
-        const completeData = await actions[ActionType.COMPLETE](
-          event.data.payload as CompletePayload,
-        );
-
-        postMessage({
-          ...completeData,
-          id,
-          action,
-        });
-        break;
-      case ActionType.INSTALL:
-        const installData = await actions[ActionType.INSTALL](event.data.payload as InstallPayload);
-
-        postMessage({
-          ...installData,
-          id,
-          action,
-        });
-        break;
-      case ActionType.FORMAT:
-        const formatData = await actions[ActionType.FORMAT](event.data.payload as FormatPayload);
-
-        postMessage({
-          ...formatData,
-          id,
-          action,
-        });
-        break;
+      postMessage({
+        data: result,
+        id,
+        action,
+      });
     }
   };
+
+  // * ================= * //
+  function handleJSFnResponse(data: JSFnCallReturnValue, id: CommandUniqueId) {
+    const { result, error } = data;
+    const { callbacks } = getState() as WorkerModuleState;
+
+    if (error) {
+      callbacks[id].reject(error);
+    }
+
+    callbacks[id].resolve(result);
+  }
+
+  function generateComplexPayloadHandler(name: string, callbackIdsToCleanUp: CommandUniqueId[]) {
+    return async (...args: unknown[]) => {
+      return new Promise((resolve, reject) => {
+        const { callbacks, commandUniqueId } = getState() as WorkerModuleState;
+
+        postMessage({
+          action: ActionType.JS_FN_CALL,
+          data: {
+            args,
+            name,
+          },
+          id: commandUniqueId,
+        });
+
+        callbackIdsToCleanUp.push(commandUniqueId);
+
+        setState({
+          callbacks: addCallback<JSFnCallReturnValue>(callbacks, commandUniqueId, {
+            resolve,
+            reject,
+          }),
+          commandUniqueId: commandUniqueId + 1,
+        });
+      });
+    };
+  }
 }
 
 main();
