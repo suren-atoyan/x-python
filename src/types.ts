@@ -20,7 +20,12 @@ type FormatPayload = {
   code: string;
 };
 
-type Payload = ExecPayload | CompletePayload | InstallPayload | FormatPayload;
+type JSFnCallPayload = {
+  args: unknown[];
+  name: string;
+};
+
+type Payload = ExecPayload | CompletePayload | InstallPayload | FormatPayload | JSFnCallPayload;
 // ====== ** ======
 
 // callbacks
@@ -32,16 +37,16 @@ type Callback<T> = {
 type Callbacks<T> = Record<CommandUniqueId, Callback<T>>;
 
 type ActionCallbacks = Callbacks<ActionReturnValue>;
-type JSCallbacks = Callbacks<JSFnCallParams>;
+type JSCallbacks = Callbacks<unknown>;
 
 type JSFunctions = {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  [fnName: string]: Function;
+  [name: string]: Function;
 };
 // ====== ** ======
 
 // params
-type ExecParams = {
+type ExecResponse = {
   id: CommandUniqueId;
   error: string | null;
   result: string | null;
@@ -49,49 +54,51 @@ type ExecParams = {
   stderr: string | null;
 };
 
-type CompleteParams = {
+type CompleteResponse = {
   result: CompletionResults;
   id: CommandUniqueId;
   error: string | null;
 };
 
-type InstallParams = {
+type InstallResponse = {
   id: CommandUniqueId;
   success: boolean;
   error: string | null;
 };
 
-type FormatParams = {
+type FormatResponse = {
   id: CommandUniqueId;
   result: string | null;
   error: string | null;
 };
 
-type JSFnCallParams = {
+type JSFnCallResponse = {
   id: CommandUniqueId;
-  args: unknown[];
-  name: string;
+  result: unknown;
+  error?: string | null;
 };
 
-type Params = ExecParams | CompleteParams | InstallParams | FormatParams;
+type Response = ExecResponse | CompleteResponse | InstallResponse | FormatResponse;
 // ====== ** ======
 
 // return values
-type ExecReturnValue = Omit<ExecParams, 'id'>;
-type CompleteReturnValue = Omit<CompleteParams, 'id'>;
-type InstallReturnValue = Omit<InstallParams, 'id'>;
-type FormatReturnValue = Omit<FormatParams, 'id'>;
+type ExecReturnValue = Omit<ExecResponse, 'id'>;
+type CompleteReturnValue = Omit<CompleteResponse, 'id'>;
+type InstallReturnValue = Omit<InstallResponse, 'id'>;
+type FormatReturnValue = Omit<FormatResponse, 'id'>;
+type JSFnCallReturnValue = Omit<JSFnCallResponse, 'id'>;
 type ActionReturnValue =
   | ExecReturnValue
   | CompleteReturnValue
   | InstallReturnValue
-  | FormatReturnValue;
+  | FormatReturnValue
+  | JSFnCallReturnValue;
 // ====== ** ======
 
 type ChannelTransmitData = {
-  id: string;
+  id: CommandUniqueId;
   action: ActionType;
-  payload: Payload;
+  data: Payload | Response;
 };
 
 enum ChannelSetupStatus {
@@ -123,7 +130,7 @@ type CompletionResults = {
   matches: CompletionMatch[];
 };
 
-type CommandUniqueId = string;
+type CommandUniqueId = number;
 
 type MainModuleState = {
   config: object;
@@ -133,8 +140,12 @@ type MainModuleState = {
   jsFunctions: JSFunctions;
 };
 
+type CallbackIdsToCleanup = Record<CommandUniqueId, CommandUniqueId[]>;
+
 type WorkerModuleState = {
-  jsCallbacks: JSCallbacks;
+  callbacks: JSCallbacks;
+  commandUniqueId: CommandUniqueId;
+  callbackIdsToCleanup: CallbackIdsToCleanup;
 };
 
 type ComplexPayload = {
@@ -151,26 +162,30 @@ export type {
   InstallPayload,
   FormatPayload,
   ComplexPayload,
+  JSFnCallPayload,
   Context,
   // ====== ** ======
   // callbacks
   Callback,
   ActionCallbacks,
+  JSCallbacks,
   JSFunctions,
+  CallbackIdsToCleanup,
   // ====== ** ======
   // params
-  Params,
-  ExecParams,
-  CompleteParams,
-  InstallParams,
-  FormatParams,
-  JSFnCallParams,
+  Response,
+  ExecResponse,
+  CompleteResponse,
+  InstallResponse,
+  FormatResponse,
+  JSFnCallResponse,
   // return values
   ActionReturnValue,
   ExecReturnValue,
   CompleteReturnValue,
   InstallReturnValue,
   FormatReturnValue,
+  JSFnCallReturnValue,
   // ====== ** ======
   ChannelTransmitData,
   CompletionResult,
