@@ -1,6 +1,6 @@
 import type { PyProxy, PyodideInterface } from 'pyodide';
 
-import { CommandUniqueId, Callback, ActionCallbacks, JSFunctions } from './types';
+import { CommandUniqueId, Callback, ActionCallbacks, JSFunctions, JSCallbacks } from './types';
 
 const WRAPPER_FUNCTION_NAME = 'wrapper';
 
@@ -98,6 +98,7 @@ function ensureCallbackIdExists(id: CommandUniqueId, doesIdExist: boolean) {
   }
 }
 
+// NOTE: the below utilities will be replaced with immer in the next version
 function removeCallback(callbacks: ActionCallbacks, removingId: CommandUniqueId) {
   // eslint-disable-next-line
   const { [removingId]: removingCallback, ...rest } = callbacks;
@@ -106,7 +107,7 @@ function removeCallback(callbacks: ActionCallbacks, removingId: CommandUniqueId)
 }
 
 function addCallback<T>(
-  callbacks: ActionCallbacks,
+  callbacks: ActionCallbacks | JSCallbacks,
   id: CommandUniqueId | string,
   callback: Callback<T>,
 ) {
@@ -122,6 +123,13 @@ function addJsFunction(
   return { ...jsFunctions, [id]: jsFunction };
 }
 
+function removeJsFunction(jsFunctions: JSFunctions, fnName: string) {
+  // eslint-disable-next-line
+  const { [fnName]: removingFunctionName, ...rest } = jsFunctions;
+
+  return rest;
+}
+
 export {
   extractMainErrorMessage,
   converteToJs,
@@ -130,4 +138,5 @@ export {
   removeCallback,
   addCallback,
   addJsFunction,
+  removeJsFunction,
 };
