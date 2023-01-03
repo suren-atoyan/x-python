@@ -25,14 +25,7 @@ import {
   ChannelTransmitData,
   ActionReturnValue,
 } from './types';
-import {
-  ensureCallbackIdExists,
-  once,
-  removeCallback,
-  addCallback,
-  addJsFunction,
-  removeJsFunction,
-} from './utils';
+import { ensureCallbackIdExists, once, removeCallback, addCallback, addJsFunction } from './utils';
 
 import Worker from './worker?worker&inline';
 
@@ -125,6 +118,8 @@ async function exec(payload: ExecPayload): Promise<ExecReturnValue> {
     const { callbacks, commandUniqueId } = getState() as MainModuleState;
 
     channel.command(sanitizePayload(payload), ActionType.EXEC);
+
+    // TODO (Suren): remove js functions related to this command
 
     setState({
       callbacks: addCallback<ExecReturnValue>(callbacks, commandUniqueId, { resolve, reject }),
@@ -231,10 +226,6 @@ async function handleJSFnCaLL(id: CommandUniqueId, { args, name }: JSFnCallPaylo
   }
 
   channel.command({ result, error }, ActionType.JS_FN_CALL, id);
-
-  setState({
-    jsFunctions: removeJsFunction(jsFunctions, name),
-  });
 }
 
 // `context` object will be passed to python through a separate thread/worker.
