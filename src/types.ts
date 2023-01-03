@@ -140,12 +140,9 @@ type MainModuleState = {
   jsFunctions: JSFunctions;
 };
 
-type CallbackIdsToCleanup = Record<CommandUniqueId, CommandUniqueId[]>;
-
 type WorkerModuleState = {
   callbacks: JSCallbacks;
   commandUniqueId: CommandUniqueId;
-  callbackIdsToCleanup: CallbackIdsToCleanup;
 };
 
 type ComplexPayload = {
@@ -170,7 +167,6 @@ export type {
   ActionCallbacks,
   JSCallbacks,
   JSFunctions,
-  CallbackIdsToCleanup,
   // ====== ** ======
   // params
   Response,
