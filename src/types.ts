@@ -138,6 +138,7 @@ type MainModuleState = {
   callbacks: ActionCallbacks;
   commandUniqueId: CommandUniqueId;
   jsFunctions: JSFunctions;
+  interruptBuffer: Uint8Array | null;
 };
 
 type WorkerModuleState = {
