@@ -46,6 +46,7 @@ const [getState, setState] = state.create({
   callbacks: {},
   commandUniqueId: 0,
   jsFunctions: {},
+  interruptBuffer: null,
 } as MainModuleState);
 
 const channel = {
@@ -58,7 +59,10 @@ const channel = {
   },
   async command(data: Payload | ActionReturnValue, action: ActionType, id?: CommandUniqueId) {
     await channel.ensureWorkerIsSetup();
-    const { commandUniqueId, pyodideWorker } = getState() as MainModuleState;
+    const { commandUniqueId, pyodideWorker, interruptBuffer } = getState() as MainModuleState;
+
+    // clear interruptBuffer in case it was accidentally left set after previous code completed.
+    if (interruptBuffer) interruptBuffer[0] = 0;
 
     if (!id) {
       setState({ commandUniqueId: commandUniqueId + 1 });
@@ -77,8 +81,8 @@ const init = once<Promise<Worker>>(function init(): Promise<Worker> {
     const pyodideWorker: Worker = new Worker();
 
     pyodideWorker.onmessage = function onmessage(event) {
-      if (event.data === ChannelSetupStatus.READY) {
-        setState({ pyodideWorker });
+      if (event.data?.status === ChannelSetupStatus.READY) {
+        setState({ pyodideWorker, interruptBuffer: event.data.interruptBuffer });
 
         pyodideWorker.onmessage = function onmessage(event: MessageEvent<ChannelTransmitData>) {
           const { action, id, data } = event.data;
@@ -193,6 +197,19 @@ async function format(payload: FormatPayload): Promise<FormatReturnValue> {
   });
 }
 
+function interrupt() {
+  const { interruptBuffer } = getState() as MainModuleState;
+
+  if (!globalThis.SharedArrayBuffer) {
+    throw new Error(`
+      \`.interrupt\` method uses SharedArrayBuffer which requires "cross-origin-isolation" to be enabled.
+      To enable "cross-origin-isolation" check this article - https://web.dev/cross-origin-isolation-guide/#enable-cross-origin-isolation
+    `);
+  }
+
+  if (interruptBuffer) interruptBuffer[0] = 2;
+}
+
 // * ============== * //
 
 function handleActionResponse(id: CommandUniqueId, data: ActionReturnValue) {
@@ -268,4 +285,4 @@ function sanitizePayload(payload: ExecPayload): ExecPayload {
   return payload;
 }
 
-export { init, exec, complete, install, format };
+export { init, exec, complete, install, format, interrupt };
