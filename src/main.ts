@@ -285,4 +285,5 @@ function sanitizePayload(payload: ExecPayload): ExecPayload {
   return payload;
 }
 
+export * from './types';
 export { init, exec, complete, install, format, interrupt };
