@@ -1,6 +1,6 @@
 {
   "name": "@x-python/core",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/suren-atoyan/x-python",
@@ -51,7 +51,7 @@
     }
   },
   "dependencies": {
-    "pyodide": "^0.23.0",
+    "pyodide": "^0.23.2",
     "state-local": "^1.0.7"
   },
   "lint-staged": {

@@ -1,3 +1,12 @@
+## 0.0.9
+
+###### _May 22, 2023_
+
+- add `options` to `format` method
+- replace deprecated `pyodide.isProxy` with `instanceof pyodide.ffi.PyProxy`
+- import `PyProxy` from `pyodide/ffi` instead of `pyodide`
+- update `pyodide` to `0.23.2`
+
 ## 0.0.8
 
 ###### _Apr 9, 2023_
