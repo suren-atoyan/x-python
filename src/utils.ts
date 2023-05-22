@@ -1,4 +1,5 @@
-import type { PyProxy, PyodideInterface } from 'pyodide';
+import type { PyodideInterface } from 'pyodide';
+import type { PyProxy } from 'pyodide/ffi';
 
 import { CommandUniqueId, Callback, ActionCallbacks, JSFunctions, JSCallbacks } from './types';
 
