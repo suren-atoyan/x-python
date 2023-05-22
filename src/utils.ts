@@ -11,7 +11,8 @@ function converteToJs(result: PyProxy, pyodide: PyodideInterface) {
       create_pyproxies: false,
     }) || result;
 
-  const converted = pyodide.isPyProxy(convertedToJs) ? convertedToJs.toString() : convertedToJs;
+  const converted =
+    convertedToJs instanceof pyodide.ffi.PyProxy ? convertedToJs.toString() : convertedToJs;
 
   if (ArrayBuffer.isView(converted)) {
     const text = new TextDecoder().decode(converted);
