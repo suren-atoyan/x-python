@@ -18,6 +18,7 @@ type InstallPayload = {
 
 type FormatPayload = {
   code: string;
+  options?: Record<string, unknown>;
 };
 
 type JSFnCallPayload = {

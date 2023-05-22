@@ -46,5 +46,8 @@ async def install_pacakge(package):
         }
 
 
-def format_code(code):
+def format_code(code, options):
+    if options:
+        mode = FileMode(**options)
+        return format_str(code, mode=mode)
     return format_str(code, mode=FileMode())

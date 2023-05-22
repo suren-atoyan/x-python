@@ -119,8 +119,11 @@ async function main() {
 
       return converteToJs(installData, pyodide);
     },
-    [ActionType.FORMAT]: async ({ code }: FormatPayload): Promise<FormatReturnValue> => {
-      const formatted = pyodide.globals.get('format_code')(code);
+    [ActionType.FORMAT]: async ({
+      code,
+      options = {},
+    }: FormatPayload): Promise<FormatReturnValue> => {
+      const formatted = pyodide.globals.get('format_code')(code, pyodide.toPy(options));
 
       return { result: converteToJs(formatted, pyodide), error: null };
     },
