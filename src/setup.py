@@ -1,14 +1,16 @@
 # pyright: reportMissingImports=false
 # type: ignore
 
-# black
 import sys
 import micropip
 import asyncio
 sys.modules["_multiprocessing"] = object
 
-await micropip.install("jedi")
-await micropip.install("black")
+# micropip tries to install the latest version of a package
+# we pin the version to avoid breaking changes
+# here are the tested versions
+await micropip.install("jedi==0.19.1")
+await micropip.install("black==23.11.0")
 
 import jedi
 from black import format_str, FileMode
